@@ -1,4 +1,5 @@
 from datetime import date
+from tkinter.filedialog import askopenfilename
 
 classList = {
     "cs2337":{"exam1":.25,"exam2":.25,"assignment":.5},
@@ -10,6 +11,7 @@ classList = {
 
 class task:
     score = 0
+    late = False
     def __init__(self,thisClass,name,weight,difficulty,dueDate):
         self.thisClass = thisClass
         self.name = name
@@ -20,7 +22,7 @@ class task:
     def printTask(self):
         print(self.name, self.score)
     def toString(self):
-        return str(self.thisClass)+": "+str(self.name)+": "+str(self.score)
+        return str(self.thisClass)+": "+str(self.name)+": "+str(self.dueDate)
 
 def calculateScore(tasktocalc):
     today = date.today()
@@ -30,9 +32,10 @@ def calculateScore(tasktocalc):
     else:
         tempWeight = tasktocalc.weight
     if dateDelta.days < 0:
+        tasktocalc.late = True
         score = tasktocalc.difficulty*2 + tempWeight*100
     else:
-        score = (tasktocalc.difficulty*2 + tempWeight*100) - dateDelta.days
+        score = (tasktocalc.difficulty*2 + tempWeight*100) - 7*(dateDelta.days)
     return score
 
 def findWeight(classNum, taskName):
@@ -45,8 +48,9 @@ def findWeight(classNum, taskName):
         except:
             return False
 
+filename = askopenfilename()
 myCalendar = []
-f = open('testInput.txt')
+f = open(filename)
 for x in f:
     thisInput = x
     assignment = thisInput.split(',')
@@ -57,7 +61,7 @@ for x in f:
     taskWeight = findWeight(classNum,taskName)
     if taskWeight == False:
         print("ERROR:TASK UNKNOWN! THIS TASK WAS SKIPPED:",classNum,taskName)
-        break
+        continue
     else:
         tempTask = task(classNum,taskName,taskWeight,5,dueDate)
     myCalendar.append(tempTask)
@@ -65,5 +69,9 @@ count = 1
 myCalendar.sort(key = lambda x: x.score, reverse = True)
 print("Here is your ordering from the inputs:")
 for x in myCalendar:
-    print(str(count)+". "+x.toString())
+    if x.late:
+        print(str(count)+". "+x.toString()+" (LATE)")
+    else:
+        print(str(count)+". "+x.toString())
     count += 1
+
